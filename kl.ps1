@@ -6,7 +6,7 @@ $code = @'
 using System;
 using System.Runtime.InteropServices;
 public class K {
-    [DllImport("user32.dll")] public static extern short GetAsyncKeyState(int vKey);
+    [DllImport("user32.dll")] public static extern short GetAsyncKeyState(int k);
 }
 '@
 
